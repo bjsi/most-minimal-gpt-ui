@@ -1,21 +1,18 @@
-import React from 'react'
+import { GithubOutlined } from "@ant-design/icons";
+import { Layout, Space, Typography } from "antd";
 
-import { GithubOutlined } from '@ant-design/icons'
-import { Layout, Space, Typography } from 'antd'
+import styles from "./index.module.less";
 
-import styles from './index.module.less'
+const { Link } = Typography;
 
-const { Link } = Typography
+const { Header } = Layout;
 
-const { Header } = Layout
-
-const HeaderBar = () => {
+export const HeaderBar = () => {
   return (
     <>
       <Header className={styles.header}>
         <div className={styles.logoBar}>
           <Link href="/">
-            <img alt="logo" src="/logo192.png" />
             <h1>ChatGPT Minimal</h1>
           </Link>
         </div>
@@ -33,7 +30,5 @@ const HeaderBar = () => {
       </Header>
       <div className={styles.vacancy} />
     </>
-  )
-}
-
-export default HeaderBar
+  );
+};

@@ -14,11 +14,3 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
-
-#__next {
-  height: 100%;
-}
-
-.hidden {
-  display: none !important;
-}
