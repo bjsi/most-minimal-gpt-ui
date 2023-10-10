@@ -1,8 +1,6 @@
 import { GithubOutlined } from "@ant-design/icons";
 import { Layout, Space, Typography } from "antd";
 
-import styles from "./index.module.less";
-
 const { Link } = Typography;
 
 const { Header } = Layout;
@@ -10,17 +8,22 @@ const { Header } = Layout;
 export const HeaderBar = () => {
   return (
     <>
-      <Header className={styles.header}>
-        <div className={styles.logoBar}>
+      <Header
+        className="fixed flex items-center w-full h-12 inset-0 py-0 px-4"
+        style={{ zIndex: 19, lineHeight: "48px", backgroundColor: "#001529" }}
+      >
+        <div className={"h-[100%] flex items-center"}>
           <Link href="/">
-            <h1>ChatGPT Minimal</h1>
+            <div className="text-3xl">MinimalGPT</div>
           </Link>
         </div>
-        <Space className={styles.right} size={0}>
-          <span className={styles.right}>
+        <Space className={"flex ml-auto h-full overflow-hidden"} size={0}>
+          <span className={"flex ml-auto h-full overflow-hidden"}>
             <Link
-              className={styles.action}
-              href="https://github.com/blrchen/chatgpt-minimal"
+              className={
+                "flex items-center h-12 py-0 px-3 text-white cursor-pointer transition-all ease-out duration-300 hover:bg-[#252a3d]"
+              }
+              href="https://github.com/bjsi/most-minimal-gpt-ui"
               target="_blank"
             >
               <GithubOutlined />
@@ -28,7 +31,7 @@ export const HeaderBar = () => {
           </span>
         </Space>
       </Header>
-      <div className={styles.vacancy} />
+      <div className={"h-[48px]"} />
     </>
   );
 };
