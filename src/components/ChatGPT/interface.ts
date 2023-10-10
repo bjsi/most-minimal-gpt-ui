@@ -1,34 +1,30 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from "react";
 
 export enum ChatRole {
-  Assistant = 'assistant',
-  User = 'user',
-  System = 'system'
-}
-
-export interface ChatGPTProps {
-  fetchPath: string
+  Assistant = "assistant",
+  User = "user",
+  System = "system",
 }
 
 export interface ChatMessage {
-  content: string
-  role: ChatRole
+  content: string;
+  role: ChatRole;
 }
 
 export interface ChatMessageItemProps {
-  message: ChatMessage
+  message: ChatMessage;
 }
 
 export interface SendBarProps {
-  loading: boolean
-  disabled: boolean
-  onSend: (message: ChatMessage) => void
-  onClear: () => void
-  onStop: () => void
+  loading: boolean;
+  disabled: boolean;
+  onSend: (message: ChatMessage) => void;
+  onClear: () => void;
+  onStop: () => void;
 }
 
 export interface ShowProps {
-  loading?: boolean
-  fallback?: ReactNode
-  children?: ReactNode
+  loading?: boolean;
+  fallback?: ReactNode;
+  children?: ReactNode;
 }
