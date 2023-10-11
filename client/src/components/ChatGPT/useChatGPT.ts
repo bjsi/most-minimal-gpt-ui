@@ -2,14 +2,9 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { z } from "zod";
 import ClipboardJS from "clipboard";
 
-import {
-  OpenAIChatMessage,
-  OpenAIChatModel,
-  ZodSchema,
-  readEventSourceStream,
-  streamText,
-} from "modelfusion";
+import { OpenAIChatMessage, readEventSourceStream } from "modelfusion";
 import { throttle } from "./throttle";
+import { ZodSchema } from "./ZodSchema";
 
 const scrollDown = throttle(() => {
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -47,19 +42,22 @@ export const useChatGPT = () => {
       currentMessage.current = "";
       controller.current = new AbortController();
       setLoading(true);
-      const response = await fetch("/api/send-message", {
+      const response = await fetch("http://localhost:3020/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(messages),
+        body: JSON.stringify({ messages }),
         signal: controller.current.signal,
       });
 
       const textDeltas = readEventSourceStream({
         stream: response.body!,
-        schema: new ZodSchema(z.string()),
+        schema: new ZodSchema(z.object({ textDelta: z.string() })),
+        errorHandler: (e) => {
+          console.error(e);
+        },
       });
 
-      for await (const textDelta of textDeltas) {
+      for await (const { textDelta } of textDeltas) {
         currentMessage.current += textDelta;
         forceUpdate();
       }

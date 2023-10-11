@@ -3,6 +3,7 @@ import { ChatGPT } from "./components/ChatGPT/ChatGPT";
 import { HeaderBar } from "./components/HeaderBar";
 import { Content } from "antd/lib/layout/layout";
 import { FooterBar } from "./components/FooterBar";
+import React from "react";
 
 function App() {
   return (
