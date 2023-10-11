@@ -6,14 +6,12 @@ import { FooterBar } from "./components/FooterBar";
 
 function App() {
   return (
-    <Layout hasSider className={"w-full min-h-full"}>
-      <Layout>
-        <HeaderBar />
-        <Content className={"flex flex-col m-2"}>
-          <ChatGPT />
-        </Content>
-        <FooterBar />
-      </Layout>
+    <Layout>
+      <HeaderBar />
+      <Content className={"flex flex-col m-2 flex-grow"}>
+        <ChatGPT />
+      </Content>
+      <FooterBar />
     </Layout>
   );
 }

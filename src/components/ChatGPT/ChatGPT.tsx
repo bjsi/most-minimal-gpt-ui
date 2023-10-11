@@ -19,7 +19,7 @@ export const ChatGPT = (props: ChatGPTProps) => {
   } = useChatGPT(props);
 
   return (
-    <div className="w-[100%] lg:w-[700px]">
+    <div className="w-[100%] ">
       {messages.map((message, index) => (
         <MessageItem key={index} message={message} />
       ))}

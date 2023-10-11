@@ -43,20 +43,18 @@ const MessageItem = (props: ChatMessageItemProps) => {
   const { message } = props;
 
   return (
-    <div className="p-2 rounded-md hover:bg-black hover:bg-opacity-5">
-      <div className="flex gap-3">
-        <div className="flex">
-          <span
-            className={clsx("inline-block w-6 h-6 mt-4 rounded-full")}
-            style={
-              message.role === "assistant"
-                ? assistantStyle
-                : message.role === "user"
-                ? userStyle
-                : systemStyle
-            }
-          ></span>
-        </div>
+    <div className="p-3 rounded-md hover:bg-black hover:bg-opacity-5">
+      <div className="flex items-center gap-3">
+        <div
+          className={clsx("inline-block w-6 h-6 rounded-full")}
+          style={
+            message.role === "assistant"
+              ? assistantStyle
+              : message.role === "user"
+              ? userStyle
+              : systemStyle
+          }
+        />
         <div
           className="flex-1 overflow-hidden text-sm"
           dangerouslySetInnerHTML={{ __html: md.render(message.content) }}
