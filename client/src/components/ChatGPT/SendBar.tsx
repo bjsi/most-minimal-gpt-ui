@@ -2,8 +2,9 @@ import { KeyboardEventHandler, useRef } from "react";
 
 import { ClearOutlined, SendOutlined } from "@ant-design/icons";
 
-import { ChatRole, SendBarProps } from "./interface";
+import { SendBarProps } from "./interface";
 import Show from "./Show";
+import React from "react";
 
 interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
@@ -49,7 +50,7 @@ const SendBar = (props: SendBarProps) => {
       inputRef.current!.style.height = "auto";
       onSend({
         content,
-        role: ChatRole.User,
+        role: "user",
       });
     }
   };
@@ -68,7 +69,7 @@ const SendBar = (props: SendBarProps) => {
     <Show
       fallback={
         <div
-          className="flex gap-2 items-baseline justify-center mt-2 p-3 text-lg rounded-md"
+          className="flex items-baseline justify-center gap-2 p-3 mt-2 text-lg rounded-md"
           style={{ backgroundColor: "#e5e7eb" }}
         >
           <span>Please wait ...</span>

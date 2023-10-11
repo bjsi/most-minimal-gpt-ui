@@ -3,8 +3,8 @@ import mdHighlight from "markdown-it-highlightjs";
 // @ts-ignore
 import mdKatex from "markdown-it-katex";
 
-import { ChatMessageItemProps } from "./interface";
 import clsx from "clsx";
+import { OpenAIChatMessage } from "modelfusion";
 
 const md = MarkdownIt({ html: true }).use(mdKatex).use(mdHighlight);
 const fence = md.renderer.rules.fence!;
@@ -39,6 +39,10 @@ const systemStyle = {
     "linear-gradient(to right, rgb(164, 194, 238), rgb(181, 128, 241), rgb(167, 92, 238))",
 };
 
+export interface ChatMessageItemProps {
+  message: OpenAIChatMessage;
+}
+
 const MessageItem = (props: ChatMessageItemProps) => {
   const { message } = props;
 
@@ -57,7 +61,7 @@ const MessageItem = (props: ChatMessageItemProps) => {
         />
         <div
           className="flex-1 overflow-hidden text-sm"
-          dangerouslySetInnerHTML={{ __html: md.render(message.content) }}
+          dangerouslySetInnerHTML={{ __html: md.render(message.content || "") }}
         />
       </div>
     </div>

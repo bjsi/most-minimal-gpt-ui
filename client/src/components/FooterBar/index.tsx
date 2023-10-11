@@ -1,6 +1,7 @@
 import { Layout } from "antd";
 
 import VersionBar from "./VersionBar";
+import React from "react";
 
 const { Footer } = Layout;
 

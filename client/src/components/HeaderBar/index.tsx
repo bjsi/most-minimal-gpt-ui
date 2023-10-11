@@ -1,5 +1,6 @@
 import { GithubOutlined } from "@ant-design/icons";
 import { Layout, Space, Typography } from "antd";
+import React from "react";
 
 const { Link } = Typography;
 

@@ -1,42 +1,23 @@
 import { useEffect, useReducer, useRef, useState } from "react";
-
+import { z } from "zod";
 import ClipboardJS from "clipboard";
 
-import { ChatMessage, ChatRole } from "./interface";
-import { ChatGPTProps } from "./ChatGPT";
+import {
+  OpenAIChatMessage,
+  OpenAIChatModel,
+  ZodSchema,
+  readEventSourceStream,
+  streamText,
+} from "modelfusion";
+import { throttle } from "./throttle";
 
-const scrollDown = () => {
+const scrollDown = throttle(() => {
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-};
+}, 300);
 
-const requestMessage = async (
-  url: string,
-  messages: ChatMessage[],
-  controller: AbortController | null
-) => {
-  const response = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify({
-      messages,
-    }),
-    signal: controller?.signal,
-  });
-
-  if (!response.ok) {
-    throw new Error(response.statusText);
-  }
-  const data = response.body;
-
-  if (!data) {
-    throw new Error("No data");
-  }
-
-  return data.getReader();
-};
-
-export const useChatGPT = (props: ChatGPTProps) => {
+export const useChatGPT = () => {
   const [, forceUpdate] = useReducer((x) => !x, false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<OpenAIChatMessage[]>([]);
   const [disabled] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -53,7 +34,7 @@ export const useChatGPT = (props: ChatGPTProps) => {
           ...messages,
           {
             content,
-            role: ChatRole.Assistant,
+            role: "assistant",
           },
         ];
       });
@@ -61,30 +42,26 @@ export const useChatGPT = (props: ChatGPTProps) => {
     }
   };
 
-  const fetchMessage = async (messages: ChatMessage[]) => {
+  const fetchMessage = async (messages: OpenAIChatMessage[]) => {
     try {
       currentMessage.current = "";
       controller.current = new AbortController();
       setLoading(true);
+      const response = await fetch("/api/send-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(messages),
+        signal: controller.current.signal,
+      });
 
-      const reader = await requestMessage("", messages, controller.current);
-      const decoder = new TextDecoder("utf-8");
-      let done = false;
+      const textDeltas = readEventSourceStream({
+        stream: response.body!,
+        schema: new ZodSchema(z.string()),
+      });
 
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        if (value) {
-          const char = decoder.decode(value);
-          if (char === "\n" && currentMessage.current.endsWith("\n")) {
-            continue;
-          }
-          if (char) {
-            currentMessage.current += char;
-            forceUpdate();
-          }
-          scrollDown();
-        }
-        done = readerDone;
+      for await (const textDelta of textDeltas) {
+        currentMessage.current += textDelta;
+        forceUpdate();
       }
 
       archiveCurrentMessage();
@@ -102,7 +79,7 @@ export const useChatGPT = (props: ChatGPTProps) => {
     }
   };
 
-  const onSend = (message: ChatMessage) => {
+  const onSend = (message: OpenAIChatMessage) => {
     const newMessages = [...messages, message];
     setMessages(newMessages);
     fetchMessage(newMessages);

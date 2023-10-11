@@ -1,13 +1,11 @@
-import { ChatRole } from "./interface";
+import React from "react";
 import MessageItem from "./MessageItem";
 import SendBar from "./SendBar";
 import { useChatGPT } from "./useChatGPT";
 
 import "highlight.js/styles/atom-one-dark.css";
 
-export interface ChatGPTProps {}
-
-export const ChatGPT = (props: ChatGPTProps) => {
+export const ChatGPT = () => {
   const {
     loading,
     disabled,
@@ -16,10 +14,10 @@ export const ChatGPT = (props: ChatGPTProps) => {
     onSend,
     onClear,
     onStop,
-  } = useChatGPT(props);
+  } = useChatGPT();
 
   return (
-    <div className="w-[100%] ">
+    <div className="w-[100%] chat-wrapper">
       {messages.map((message, index) => (
         <MessageItem key={index} message={message} />
       ))}
@@ -27,7 +25,7 @@ export const ChatGPT = (props: ChatGPTProps) => {
         <MessageItem
           message={{
             content: currentMessage.current,
-            role: ChatRole.Assistant,
+            role: "assistant",
           }}
         />
       )}
