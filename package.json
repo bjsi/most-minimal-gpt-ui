@@ -6,7 +6,10 @@
   "author": "Jamesb <experimentallearning0@gmail.com>",
   "license": "MIT",
   "private": true,
-  "workspaces": ["client", "server"],
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
     "client": "yarn workspace client dev",
     "server": "yarn workspace server dev"

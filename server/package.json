@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "npx ts-node src/index.ts"
+    "dev": "concurrently \"nodemon --watch ./src/ --ext js,mjs,cjs,json,ts -x 'npx ts-node ./src/index.ts'\""
   },
   "author": "",
   "license": "ISC",
@@ -14,5 +14,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.1",
+    "nodemon": "^3.0.1"
   }
 }
