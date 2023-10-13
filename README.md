@@ -4,8 +4,6 @@
 
 - A simple UI to chat with David Deutsch and get footnotes to resources to learn more.
 
-![image](https://raw.githubusercontent.com/bjsi/ai-popper/main/packages/ui/img/define-optimism.png)
-
 ## How to Use
 
 - Go to the root directory of this repo (the one with the `packages` folder in it)
