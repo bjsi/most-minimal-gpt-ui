@@ -70,6 +70,8 @@ export const sendMessage = async (request: Request, response: Response) => {
       console.log("client aborted request");
       response.end();
       return;
+    } else {
+      console.log("error", e);
     }
   }
 };
