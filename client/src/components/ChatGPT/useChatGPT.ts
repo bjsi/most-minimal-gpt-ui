@@ -37,15 +37,16 @@ export const useChatGPT = () => {
     }
   };
 
-  const fetchMessage = async (messages: OpenAIChatMessage[]) => {
+  const sendChat = async (urlEndpoint: string, body: Record<string, any>) => {
     try {
       currentMessage.current = "";
       controller.current = new AbortController();
       setLoading(true);
-      const response = await fetch("http://localhost:3020/chat", {
+
+      const response = await fetch(`http://localhost:3020/${urlEndpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify(body),
         signal: controller.current.signal,
       });
 
@@ -68,6 +69,10 @@ export const useChatGPT = () => {
       setLoading(false);
       return;
     }
+  };
+
+  const sendChatMessage = async (messages: OpenAIChatMessage[]) => {
+    await sendChat("chat", { messages });
   };
 
   const onStop = () => {

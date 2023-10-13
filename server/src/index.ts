@@ -12,7 +12,7 @@ const port = 3020;
 app.use(express.json());
 app.use(cors());
 
-const requestSchema = z.array(
+const chatMessagesSchema = z.array(
   z.object({
     role: z.enum(["user", "assistant", "system"]),
     content: z.string(),
@@ -28,14 +28,6 @@ async function streamRequestHandler(
     if (request.method !== "POST") {
       return response.status(405).json({
         error: `Method ${request.method} not allowed. Only POST allowed.`,
-      });
-    }
-
-    const { messages } = request.body;
-    const parsedData = requestSchema.safeParse(messages);
-    if (parsedData.success === false) {
-      return response.status(400).json({
-        error: `Could not parse content. Error: ${parsedData.error}`,
       });
     }
 
@@ -67,8 +59,15 @@ async function streamRequestHandler(
   }
 }
 
-app.post("/chat", async (req, res) => {
-  streamRequestHandler(req, res, (signal) =>
+app.post("/chat", async (request, response) => {
+  const { messages } = request.body;
+  const parsedData = chatMessagesSchema.safeParse(messages);
+  if (parsedData.success === false) {
+    return response.status(400).json({
+      error: `Could not parse content. Error: ${parsedData.error}`,
+    });
+  }
+  streamRequestHandler(request, response, (signal) =>
     streamText(
       new OpenAIChatModel({ model: "gpt-3.5-turbo", temperature: 0 }),
       [
@@ -78,7 +77,7 @@ app.post("/chat", async (req, res) => {
             "You are an AI chat bot. " +
             "Follow the user's instructions carefully. Respond using markdown.",
         },
-        ...req.body.messages,
+        ...request.body.messages,
       ],
       {
         run: {
