@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { z } from "zod";
 import { AbortError, OpenAIChatModel, streamText } from "modelfusion";
+import { chatAs } from "shared-lib/src/data/search";
 
 dotenv.config();
 
@@ -88,6 +89,17 @@ app.post("/chat", async (req, res) => {
     )
   );
 });
+
+app.post("/chatAs", async (req, res) => {
+  const { question, personality } = req.body;
+  streamRequestHandler(req, res, (signal) =>
+    chatAs({
+      question,
+      personality,
+      messages: req.body.messages,
+      signal,
+    })
+  );
 });
 
 app.listen(port, () => {
