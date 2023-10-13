@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { z } from "zod";
@@ -19,9 +19,12 @@ const requestSchema = z.array(
   })
 );
 
-app.post("/chat", async (request, response) => {
+async function streamRequestHandler(
+  request: Request,
+  response: Response,
+  streamFn: (signal: AbortSignal) => Promise<AsyncIterable<string>>
+) {
   try {
-    console.log("sendMessage");
     if (request.method !== "POST") {
       return response.status(405).json({
         error: `Method ${request.method} not allowed. Only POST allowed.`,
@@ -29,9 +32,7 @@ app.post("/chat", async (request, response) => {
     }
 
     const { messages } = request.body;
-    console.log(messages);
     const parsedData = requestSchema.safeParse(messages);
-
     if (parsedData.success === false) {
       return response.status(400).json({
         error: `Could not parse content. Error: ${parsedData.error}`,
@@ -39,21 +40,8 @@ app.post("/chat", async (request, response) => {
     }
 
     const controller = new AbortController();
+    const textStream = await streamFn(controller.signal);
 
-    const textStream = await streamText(
-      new OpenAIChatModel({ model: "gpt-3.5-turbo", temperature: 0 }),
-      [
-        {
-          role: "system",
-          content:
-            "You are an AI chat bot. " +
-            "Follow the user's instructions carefully. Respond using markdown.",
-        },
-        ...parsedData.data,
-      ],
-      // forward the abort signal:
-      { run: { abortSignal: controller.signal } }
-    );
     response.setHeader("Content-Type", "text/event-stream");
     response.setHeader("Cache-Control", "no-cache");
     response.setHeader("Connection", "keep-alive");
@@ -65,7 +53,6 @@ app.post("/chat", async (request, response) => {
     });
 
     for await (const textDelta of textStream) {
-      console.log(textDelta);
       response.write(`data: ${JSON.stringify({ textDelta })}\n\n`);
     }
 
@@ -74,11 +61,33 @@ app.post("/chat", async (request, response) => {
     if (e instanceof AbortError) {
       console.log("client aborted request");
       response.end();
-      return;
     } else {
       console.log("error", e);
     }
   }
+}
+
+app.post("/chat", async (req, res) => {
+  streamRequestHandler(req, res, (signal) =>
+    streamText(
+      new OpenAIChatModel({ model: "gpt-3.5-turbo", temperature: 0 }),
+      [
+        {
+          role: "system",
+          content:
+            "You are an AI chat bot. " +
+            "Follow the user's instructions carefully. Respond using markdown.",
+        },
+        ...req.body.messages,
+      ],
+      {
+        run: {
+          abortSignal: signal,
+        },
+      }
+    )
+  );
+});
 });
 
 app.listen(port, () => {
