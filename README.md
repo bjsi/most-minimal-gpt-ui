@@ -1,6 +1,15 @@
-# Most Minimal GPT UI
+# AI Popper UI
 
-- Small codebase, easy to understand, hack and extend.
-- Use this when you just need a quick and dirty UI to build on.
+## Features
 
-![image](https://raw.githubusercontent.com/bjsi/most-minimal-gpt-ui/main/img/minimal.png)
+- A simple UI to chat with David Deutsch and get footnotes to resources to learn more.
+
+![image](https://raw.githubusercontent.com/bjsi/ai-popper/main/packages/ui/img/define-optimism.png)
+
+## How to Use
+
+- Go to the root directory of this repo (the one with the `packages` folder in it)
+- Run `yarn` to install dependencies
+- Run `yarn server` to start the server
+- Run `yarn client` to start the frontend
+- Open the link shown in the terminal
