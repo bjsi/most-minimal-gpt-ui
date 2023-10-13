@@ -1308,6 +1308,7 @@ __metadata:
     clsx: ^2.0.0
     lodash-es: 4.17.21
     markdown-it: 13.0.1
+    markdown-it-footnote: ^3.0.3
     markdown-it-highlightjs: 4.0.1
     markdown-it-katex: 2.0.3
     postcss: ^8.4.31
@@ -2787,6 +2788,13 @@ __metadata:
     socks-proxy-agent: ^7.0.0
     ssri: ^10.0.0
   checksum: 7268bf274a0f6dcf0343829489a4506603ff34bd0649c12058753900b0eb29191dce5dba12680719a5d0a983d3e57810f594a12f3c18494e93a1fbc6348a4540
+  languageName: node
+  linkType: hard
+
+"markdown-it-footnote@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "markdown-it-footnote@npm:3.0.3"
+  checksum: 3657f943f938603ec74e86a41883bfac5564eec7733b8d74e00894cb2b2b73f823c072bccd8aa07c418ae1e017a4f5d22c6309627dfc2800100fcb2c6c71e24b
   languageName: node
   linkType: hard
 
