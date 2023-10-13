@@ -23,6 +23,8 @@ function Button(props: ButtonProps) {
   );
 }
 
+export const SEND_BAR_HEIGHT = 60;
+
 const SendBar = (props: SendBarProps) => {
   const { loading, disabled, onSend, onClear, onStop } = props;
 
@@ -66,44 +68,52 @@ const SendBar = (props: SendBarProps) => {
   };
 
   return (
-    <Show
-      fallback={
-        <div
-          className="flex items-baseline justify-center gap-2 p-3 mt-2 text-lg rounded-md"
-          style={{ backgroundColor: "#e5e7eb" }}
-        >
-          <span>Please wait ...</span>
-          <div
-            className="px-3 py-0 text-sm rounded-md cursor-pointer"
-            style={{ border: "1px solid #282c34" }}
-            onClick={onStop}
-          >
-            Stop
-          </div>
-        </div>
-      }
-      loading={loading}
+    <div
+      style={{
+        maxHeight: SEND_BAR_HEIGHT,
+        minHeight: SEND_BAR_HEIGHT,
+        height: SEND_BAR_HEIGHT,
+      }}
     >
-      <div className="flex gap-2 mt-2">
-        <textarea
-          ref={inputRef!}
-          className="flex-1 p-3 text-lg border-0 rounded-md resize-none focus:outline-none focus:ring focus:ring-opacity-0"
-          style={{ outlineOffset: "2px" }}
-          disabled={disabled}
-          placeholder="Shift + Enter for new line"
-          autoComplete="off"
-          rows={1}
-          onKeyDown={onKeydown}
-          onInput={onInputAutoSize}
-        />
-        <Button title="Send" disabled={disabled} onClick={handleSend}>
-          <SendOutlined />
-        </Button>
-        <Button title="Clear" disabled={disabled} onClick={handleClear}>
-          <ClearOutlined />
-        </Button>
-      </div>
-    </Show>
+      <Show
+        fallback={
+          <div
+            className="flex items-baseline justify-center gap-2 p-3 mt-2 text-lg rounded-md"
+            style={{ backgroundColor: "#e5e7eb" }}
+          >
+            <span>Generating ...</span>
+            <div
+              className="px-3 py-0 text-sm rounded-md cursor-pointer"
+              style={{ border: "1px solid #282c34" }}
+              onClick={onStop}
+            >
+              Stop
+            </div>
+          </div>
+        }
+        loading={loading}
+      >
+        <div className="flex gap-2">
+          <textarea
+            ref={inputRef!}
+            className="flex-1 p-3 text-lg border-0 rounded-md resize-none focus:outline-none focus:ring focus:ring-opacity-0"
+            style={{ outlineOffset: "2px" }}
+            disabled={disabled}
+            placeholder="Shift + Enter for new line"
+            autoComplete="off"
+            rows={1}
+            onKeyDown={onKeydown}
+            onInput={onInputAutoSize}
+          />
+          <Button title="Send" disabled={disabled} onClick={handleSend}>
+            <SendOutlined />
+          </Button>
+          <Button title="Clear" disabled={disabled} onClick={handleClear}>
+            <ClearOutlined />
+          </Button>
+        </div>
+      </Show>
+    </div>
   );
 };
 
