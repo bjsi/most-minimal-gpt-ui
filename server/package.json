@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"nodemon --watch ./src/ --ext js,mjs,cjs,json,ts -x 'npx ts-node ./src/index.ts'\""
+    "dev": "concurrently \"nodemon  --watch ../../shared-lib/ --watch ./src/ --ext js,mjs,cjs,json,ts -x 'npx ts-node ./src/index.ts'\""
   },
   "author": "",
   "license": "ISC",
