@@ -6,12 +6,21 @@ const { Link } = Typography;
 
 const { Header } = Layout;
 
+export const HEADER_HEIGHT = 48;
+
 export const HeaderBar = () => {
   return (
     <>
       <Header
-        className="fixed flex items-center w-full h-12 inset-0 py-0 px-4"
-        style={{ zIndex: 19, lineHeight: "48px", backgroundColor: "#001529" }}
+        className="fixed inset-0 flex items-center w-full px-4 py-0"
+        style={{
+          zIndex: 19,
+          lineHeight: "48px",
+          backgroundColor: "#001529",
+          height: `${HEADER_HEIGHT}px`,
+          maxHeight: `${HEADER_HEIGHT}px`,
+          minHeight: `${HEADER_HEIGHT}px`,
+        }}
       >
         <div className={"h-[100%] flex items-center"}>
           <Link href="/">
