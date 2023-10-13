@@ -75,6 +75,10 @@ export const useChatGPT = () => {
     await sendChat("chat", { messages });
   };
 
+  const sendChatAsMessage = async (messages: OpenAIChatMessage[]) => {
+    await sendChat("chatAs", { messages, personality: "David Deutsch" });
+  };
+
   const onStop = () => {
     if (controller.current) {
       controller.current.abort();
@@ -85,7 +89,7 @@ export const useChatGPT = () => {
   const onSend = (message: OpenAIChatMessage) => {
     const newMessages = [...messages, message];
     setMessages(newMessages);
-    fetchMessage(newMessages);
+    sendChatAsMessage(newMessages);
   };
 
   const onClear = () => {

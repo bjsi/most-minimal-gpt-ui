@@ -89,13 +89,21 @@ app.post("/chat", async (request, response) => {
   );
 });
 
-app.post("/chatAs", async (req, res) => {
-  const { question, personality } = req.body;
-  streamRequestHandler(req, res, (signal) =>
+const chatAsSchema = z.object({
+  personality: z.union([z.literal("David Deutsch"), z.literal("Karl Popper")]),
+  messages: chatMessagesSchema,
+});
+
+app.post("/chatAs", async (request, response) => {
+  const parsedData = chatAsSchema.safeParse(request.body);
+  if (parsedData.success === false) {
+    return response.status(400).json({
+      error: `Could not parse content. Error: ${parsedData.error}`,
+    });
+  }
+  streamRequestHandler(request, response, (signal) =>
     chatAs({
-      question,
-      personality,
-      messages: req.body.messages,
+      ...parsedData.data,
       signal,
     })
   );
