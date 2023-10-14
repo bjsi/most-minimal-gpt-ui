@@ -24,7 +24,7 @@ export const HeaderBar = () => {
       >
         <div className={"h-[100%] flex items-center"}>
           <Link href="/">
-            <div className="text-3xl">MinimalGPT</div>
+            <div className="text-3xl">AI Popper</div>
           </Link>
         </div>
         <Space className={"flex ml-auto h-full overflow-hidden"} size={0}>
@@ -33,7 +33,7 @@ export const HeaderBar = () => {
               className={
                 "flex items-center h-12 py-0 px-3 text-white cursor-pointer transition-all ease-out duration-300 hover:bg-[#252a3d]"
               }
-              href="https://github.com/bjsi/most-minimal-gpt-ui"
+              href="https://github.com/bjsi/ai-popper"
               target="_blank"
             >
               <GithubOutlined />
