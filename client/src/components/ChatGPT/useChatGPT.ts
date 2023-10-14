@@ -5,7 +5,7 @@ import ClipboardJS from "clipboard";
 import { OpenAIChatMessage, readEventSourceStream } from "modelfusion";
 import { throttle } from "./throttle";
 import { ZodSchema } from "./ZodSchema";
-import { textChunker, TextToSpeechStreamer } from "./TextToSpeechStreamer";
+import { TextToSpeechStreamer } from "./TextToSpeechStreamer";
 
 const scrollDown = throttle(() => {
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -65,7 +65,7 @@ export const useChatGPT = () => {
 
       if (tts) {
         const ttsStreamer = await TextToSpeechStreamer.create();
-        for await (const textDelta of textChunker(textDeltas)) {
+        for await (const { textDelta } of textDeltas) {
           ttsStreamer.sendTextDelta(textDelta);
           currentMessage.current += textDelta;
           forceUpdate();

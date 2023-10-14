@@ -1,44 +1,5 @@
 import { SequentialAsyncOperationQueue } from "./sequentialAsyncOperationQueue";
 
-// if chunks don't end with space or punctuation (" ", ".", "?", "!"), the stream will wait for more text.
-export async function* textChunker(
-  chunks: AsyncIterable<{ textDelta: string }>
-): AsyncGenerator<string> {
-  const splitters = [
-    ".",
-    ",",
-    "?",
-    "!",
-    ";",
-    ":",
-    "—",
-    "-",
-    "(",
-    ")",
-    "[",
-    "]",
-    "}",
-    " ",
-  ];
-  let buffer = "";
-
-  for await (const { textDelta: text } of chunks) {
-    if (splitters.some((s) => buffer.endsWith(s))) {
-      yield buffer + " ";
-      buffer = text;
-    } else if (splitters.some((s) => text.startsWith(s))) {
-      yield buffer + text[0] + " ";
-      buffer = text.slice(1);
-    } else {
-      buffer += text;
-    }
-  }
-
-  if (buffer) {
-    yield buffer + " ";
-  }
-}
-
 export class TextToSpeechStreamer {
   private voiceId = "21m00Tcm4TlvDq8ikWAM"; // replace with your voice_id
   private model = "eleven_monolingual_v1";
@@ -46,6 +7,7 @@ export class TextToSpeechStreamer {
   private ttsSocket: WebSocket = new WebSocket(this.wsUrl);
   private audioPlaybackQueue = new SequentialAsyncOperationQueue();
   private sentBOS = false;
+  private insideFootnote = false;
 
   private constructor() {
     this.ttsSocket.onmessage = this.handleMessage.bind(this);
@@ -124,7 +86,11 @@ export class TextToSpeechStreamer {
     this.done();
   }
 
-  sendTextDelta(textDelta: string) {
+  private send(text: string) {
+    this.ttsSocket.send(JSON.stringify({ text, try_trigger_generation: true }));
+  }
+
+  sendTextDelta(text: string) {
     if (!this.sentBOS) {
       const bosMessage = {
         text: " ",
@@ -135,15 +101,59 @@ export class TextToSpeechStreamer {
         xi_api_key: import.meta.env.VITE_ELEVEN_LABS_API_KEY, // replace with your API key
       };
       this.ttsSocket.send(JSON.stringify(bosMessage));
+      this.insideFootnote = false;
+      this.sentBOS = true;
     }
 
-    console.log("streamTTS: textDelta", textDelta);
-    const textMessage = {
-      text: textDelta,
-      try_trigger_generation: true,
-    };
+    const splitters = [
+      ".",
+      ",",
+      "?",
+      "!",
+      ";",
+      ":",
+      "—",
+      "-",
+      "(",
+      ")",
+      "}",
+      " ",
+    ];
 
-    this.ttsSocket.send(JSON.stringify(textMessage));
+    let buffer = "";
+    if (text.includes("[")) {
+      // send the buffer and the text before the [
+      const [before, _] = text.split("[");
+      const textPart = buffer + before;
+      if (textPart) {
+        this.send(textPart + " ");
+      }
+      this.insideFootnote = true;
+      return;
+    } else if (text.includes("]")) {
+      // send the buffer and the text after the ]
+      const [_, after] = text.split("]");
+      const textPart = buffer + after;
+      if (textPart) {
+        this.send(textPart + " ");
+      }
+      this.insideFootnote = false;
+      return;
+    } else if (this.insideFootnote) {
+      return;
+    } else if (splitters.some((s) => buffer.endsWith(s))) {
+      this.send(buffer + " ");
+      buffer = text;
+    } else if (splitters.some((s) => text.startsWith(s))) {
+      this.send(buffer + text[0] + " ");
+      buffer = text.slice(1);
+    } else {
+      buffer += text;
+    }
+
+    if (buffer) {
+      this.send(buffer + " ");
+    }
   }
 
   done() {
@@ -151,7 +161,7 @@ export class TextToSpeechStreamer {
     const eosMessage = {
       text: "",
     };
-
+    this.insideFootnote = false;
     this.ttsSocket.send(JSON.stringify(eosMessage));
   }
 }
