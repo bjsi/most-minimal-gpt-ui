@@ -5,6 +5,7 @@ import ClipboardJS from "clipboard";
 import { OpenAIChatMessage, readEventSourceStream } from "modelfusion";
 import { throttle } from "./throttle";
 import { ZodSchema } from "./ZodSchema";
+import { textChunker, TextToSpeechStreamer } from "./TextToSpeechStreamer";
 
 const scrollDown = throttle(() => {
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -37,7 +38,11 @@ export const useChatGPT = () => {
     }
   };
 
-  const sendChat = async (urlEndpoint: string, body: Record<string, any>) => {
+  const sendChat = async (
+    urlEndpoint: string,
+    body: Record<string, any>,
+    tts: boolean
+  ) => {
     try {
       currentMessage.current = "";
       controller.current = new AbortController();
@@ -58,9 +63,19 @@ export const useChatGPT = () => {
         },
       });
 
-      for await (const { textDelta } of textDeltas) {
+      if (tts) {
+        const ttsStreamer = await TextToSpeechStreamer.create();
+        for await (const textDelta of textChunker(textDeltas)) {
+          ttsStreamer.sendTextDelta(textDelta);
+          currentMessage.current += textDelta;
+          forceUpdate();
+        }
+        ttsStreamer.done();
+      } else {
+        for await (const textDelta of textDeltas) {
         currentMessage.current += textDelta;
         forceUpdate();
+      }
       }
 
       archiveCurrentMessage();
@@ -72,7 +87,7 @@ export const useChatGPT = () => {
   };
 
   const sendChatMessage = async (messages: OpenAIChatMessage[]) => {
-    await sendChat("chat", { messages });
+    await sendChat("chat", { messages }, false);
   };
 
   const sendChatAsMessage = async (messages: OpenAIChatMessage[]) => {
