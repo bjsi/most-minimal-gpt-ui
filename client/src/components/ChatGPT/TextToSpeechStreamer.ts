@@ -1,7 +1,7 @@
 import { SequentialAsyncOperationQueue } from "./sequentialAsyncOperationQueue";
 
 export class TextToSpeechStreamer {
-  private voiceId = "21m00Tcm4TlvDq8ikWAM"; // replace with your voice_id
+  private voiceId = "LX4K2KUcue0ViWVHVMn6"; // David Deutsch
   private model = "eleven_monolingual_v1";
   private wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${this.voiceId}/stream-input?model_id=${this.model}`;
   private ttsSocket: WebSocket = new WebSocket(this.wsUrl);
