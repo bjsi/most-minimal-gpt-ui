@@ -7,7 +7,9 @@ import clsx from "clsx";
 import { OpenAIChatMessage } from "modelfusion";
 import React from "react";
 
-const md = MarkdownIt({ html: true }).use(mdKatex).use(mdHighlight);
+const md = MarkdownIt({ html: true, breaks: true })
+  .use(mdKatex)
+  .use(mdHighlight);
 const fence = md.renderer.rules.fence!;
 md.renderer.rules.fence = (...args) => {
   const [tokens, idx] = args;

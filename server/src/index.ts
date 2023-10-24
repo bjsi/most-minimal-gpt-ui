@@ -2,7 +2,19 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { z } from "zod";
-import { AbortError, OpenAIChatModel, streamText } from "modelfusion";
+import {
+  OpenAIChatModel,
+  OpenAIImageGenerationModel,
+  generateImage,
+  streamText,
+} from "modelfusion";
+import {
+  createMealPlan,
+  createMealPlanSchema,
+  extractIngredients,
+  recipeSchema,
+  updateRecipe,
+} from "shared-lib";
 
 dotenv.config();
 
@@ -22,7 +34,7 @@ const chatMessagesSchema = z.array(
 async function streamRequestHandler(
   request: Request,
   response: Response,
-  streamFn: (signal: AbortSignal) => Promise<AsyncIterable<string>>
+  streamFn: (signal: AbortSignal) => Promise<AsyncIterable<any>>
 ) {
   try {
     if (request.method !== "POST") {
@@ -32,7 +44,7 @@ async function streamRequestHandler(
     }
 
     const controller = new AbortController();
-    const textStream = await streamFn(controller.signal);
+    const stream = await streamFn(controller.signal);
 
     response.setHeader("Content-Type", "text/event-stream");
     response.setHeader("Cache-Control", "no-cache");
@@ -44,13 +56,15 @@ async function streamRequestHandler(
       console.log("response closed");
     });
 
-    for await (const textDelta of textStream) {
-      response.write(`data: ${JSON.stringify({ textDelta })}\n\n`);
+    for await (const chunk of stream) {
+      const data = JSON.stringify({ chunk });
+      console.log(data);
+      response.write(`data: ${data}\n\n`);
     }
 
     response.end();
   } catch (e) {
-    if (e instanceof AbortError) {
+    if ((e as any).name === "AbortError") {
       console.log("client aborted request");
       response.end();
     } else {
@@ -86,6 +100,84 @@ app.post("/chat", async (request, response) => {
       }
     )
   );
+});
+
+app.post("/create-meal-plan", async (request, response) => {
+  const parsedData = z
+    .object({
+      requirements: z.string(),
+    })
+    .safeParse(request.body);
+  if (parsedData.success === false) {
+    return response.status(400).json({
+      error: `Could not parse content. Error: ${parsedData.error}`,
+    });
+  }
+  streamRequestHandler(request, response, (signal) =>
+    createMealPlan(parsedData.data, true, signal)
+  );
+});
+
+const updateMealPlanSchema = z.object({
+  mealPlan: z.string(),
+  feedback: z.string(),
+});
+
+app.post("/update-recipe", async (request, response) => {
+  const parsedData = updateMealPlanSchema.safeParse(request.body);
+  if (parsedData.success === false) {
+    return response.status(400).json({
+      error: `Could not parse content. Error: ${parsedData.error}`,
+    });
+  }
+  streamRequestHandler(request, response, (signal) =>
+    updateRecipe(parsedData.data, true, signal)
+  );
+});
+
+app.post("/generate-image", async (request, response) => {
+  const body = request.body;
+  const parsedData = z.object({ prompt: z.string() }).safeParse(body);
+  if (parsedData.success === false) {
+    return response.status(400).json({
+      error: `Could not parse content. Error: ${parsedData.error}`,
+    });
+  }
+  const prompt = parsedData.data.prompt;
+  console.log("Generating image with prompt:", prompt);
+  try {
+    const imageBuffer = await generateImage(
+      new OpenAIImageGenerationModel({
+        n: 1,
+        size: "256x256",
+      }),
+      prompt
+    );
+    response.send(imageBuffer);
+  } catch (e) {
+    console.log(e);
+    response.status(500).json({ error: e });
+  }
+});
+
+app.post("/extract-ingredients", async (request, response) => {
+  const body = request.body;
+  const parsedData = z.object({ mealPlans: z.string() }).safeParse(body);
+  if (parsedData.success === false) {
+    return response.status(400).json({
+      error: `Could not parse content. Error: ${parsedData.error}`,
+    });
+  }
+  try {
+    const ingredients = await extractIngredients(
+      { mealPlans: parsedData.data.mealPlans },
+      false
+    );
+    return response.json(ingredients);
+  } catch (e) {
+    console.log(e);
+    response.status(500).json({ error: e });
+  }
 });
 
 app.listen(port, () => {

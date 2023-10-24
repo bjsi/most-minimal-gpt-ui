@@ -1,13 +1,15 @@
 import { KeyboardEventHandler, useRef } from "react";
 
-import { ClearOutlined, SendOutlined } from "@ant-design/icons";
+import { ClearOutlined, SaveOutlined, SendOutlined } from "@ant-design/icons";
 
-import { SendBarProps } from "./interface";
 import Show from "./Show";
 import React from "react";
+import { OpenAIChatMessage } from "modelfusion";
+import { Spin } from "antd";
 
 interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
+  disabled?: boolean;
 }
 
 function Button(props: ButtonProps) {
@@ -25,6 +27,20 @@ function Button(props: ButtonProps) {
 
 export const SEND_BAR_HEIGHT = 60;
 
+export interface SendBarProps {
+  loading: boolean;
+  disabled: boolean;
+  onSend: (message: OpenAIChatMessage) => void;
+  onClear: () => void;
+  onStop: () => void;
+  inputText?: React.MutableRefObject<string>;
+  placeholder?: string;
+  hideClearBtn?: boolean;
+  onSave?: () => void;
+  saveDisabled?: boolean;
+  saveLoading?: boolean;
+}
+
 const SendBar = (props: SendBarProps) => {
   const { loading, disabled, onSend, onClear, onStop } = props;
 
@@ -34,6 +50,9 @@ const SendBar = (props: SendBarProps) => {
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
       inputRef.current.style.height = inputRef.current.scrollHeight + "px";
+    }
+    if (props.inputText?.current) {
+      props.inputText!.current = inputRef.current?.value || "";
     }
   };
 
@@ -99,7 +118,7 @@ const SendBar = (props: SendBarProps) => {
             className="flex-1 p-3 text-lg border-0 rounded-md resize-none focus:outline-none focus:ring focus:ring-opacity-0"
             style={{ outlineOffset: "2px" }}
             disabled={disabled}
-            placeholder="Shift + Enter for new line"
+            placeholder={props.placeholder}
             autoComplete="off"
             rows={1}
             onKeyDown={onKeydown}
@@ -108,9 +127,26 @@ const SendBar = (props: SendBarProps) => {
           <Button title="Send" disabled={disabled} onClick={handleSend}>
             <SendOutlined />
           </Button>
-          <Button title="Clear" disabled={disabled} onClick={handleClear}>
-            <ClearOutlined />
-          </Button>
+          {!props.hideClearBtn && (
+            <Button title="Clear" disabled={disabled} onClick={handleClear}>
+              <ClearOutlined />
+            </Button>
+          )}
+          {props.onSave && (
+            <Button
+              onClick={() => {
+                props.onSave?.();
+              }}
+              title="Save"
+              disabled={props.saveDisabled}
+            >
+              {props.saveLoading ? (
+                <Spin className="w-4 h-4" />
+              ) : (
+                <SaveOutlined></SaveOutlined>
+              )}
+            </Button>
+          )}
         </div>
       </Show>
     </div>

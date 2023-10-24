@@ -1,50 +1,39 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import ClipboardJS from "clipboard";
+import * as ClipboardJS from "clipboard";
 
 import { OpenAIChatMessage, readEventSourceStream } from "modelfusion";
 import { throttle } from "./throttle";
 import { ZodSchema } from "./ZodSchema";
-import { textChunker, TextToSpeechStreamer } from "./TextToSpeechStreamer";
+import {
+  partialCreateMealPlanSchema,
+  partialRecipeSchema,
+} from "shared-lib/src/ai/prompts/createMealPlan";
 
 const scrollDown = throttle(() => {
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 }, 300);
 
-export const useChatGPT = () => {
-  const [, forceUpdate] = useReducer((x) => !x, false);
+const useChatGPT = <StreamChunk>(props: {
+  urlEndpoint: string;
+  streamChunkSchema: z.ZodType<StreamChunk>;
+  updateCurrentMessage: (chunk: {
+    value: StreamChunk;
+    isComplete: boolean;
+  }) => StreamChunk | undefined;
+}) => {
+  const { urlEndpoint, streamChunkSchema, updateCurrentMessage } = props;
   const [messages, setMessages] = useState<OpenAIChatMessage[]>([]);
   const [disabled] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-
   const controller = useRef<AbortController | null>(null);
-  const currentMessage = useRef<string>("");
+  const [currentMessage, setCurrentMessage] = useState<
+    StreamChunk | undefined
+  >();
 
-  const archiveCurrentMessage = () => {
-    const content = currentMessage.current;
-    currentMessage.current = "";
-    setLoading(false);
-    if (content) {
-      setMessages((messages) => {
-        return [
-          ...messages,
-          {
-            content,
-            role: "assistant",
-          },
-        ];
-      });
-      scrollDown();
-    }
-  };
-
-  const sendChat = async (
-    urlEndpoint: string,
-    body: Record<string, any>,
-    tts: boolean
-  ) => {
+  async function sendChat(body: Record<string, unknown>) {
     try {
-      currentMessage.current = "";
+      setCurrentMessage(undefined);
       controller.current = new AbortController();
       setLoading(true);
 
@@ -55,56 +44,61 @@ export const useChatGPT = () => {
         signal: controller.current.signal,
       });
 
-      const textDeltas = readEventSourceStream({
+      const streamChunks = readEventSourceStream({
         stream: response.body!,
-        schema: new ZodSchema(z.object({ textDelta: z.string() })),
+        schema: new ZodSchema(
+          z.object({
+            chunk: z.object({
+              isComplete: z.boolean(),
+              value: streamChunkSchema,
+            }),
+          })
+        ),
         errorHandler: (e) => {
           console.error(e);
         },
-      });
+      }) as AsyncIterable<{
+        chunk: { isComplete: boolean; value: StreamChunk };
+      }>;
 
-      if (tts) {
-        const ttsStreamer = await TextToSpeechStreamer.create();
-        for await (const textDelta of textChunker(textDeltas)) {
-          ttsStreamer.sendTextDelta(textDelta);
-          currentMessage.current += textDelta;
-          forceUpdate();
-        }
-        ttsStreamer.done();
-      } else {
-        for await (const textDelta of textDeltas) {
-        currentMessage.current += textDelta;
-        forceUpdate();
-      }
+      for await (const { chunk } of streamChunks) {
+        const updatedCurrentMessage = updateCurrentMessage(chunk);
+        setCurrentMessage(updatedCurrentMessage);
       }
 
-      archiveCurrentMessage();
-    } catch (e) {
-      console.error(e);
       setLoading(false);
-      return;
+      scrollDown();
+    } catch (e) {
+      if (e.name === "AbortError" || e instanceof DOMException) {
+        console.log("cancelled");
+        return;
+      } else {
+        console.error(e);
+        setLoading(false);
+        return;
+      }
     }
-  };
-
-  const sendChatMessage = async (messages: OpenAIChatMessage[]) => {
-    await sendChat("chat", { messages }, false);
-  };
+  }
 
   const onStop = () => {
     if (controller.current) {
       controller.current.abort();
-      archiveCurrentMessage();
+      setLoading(false);
+      scrollDown();
     }
   };
 
-  const onSend = (message: OpenAIChatMessage) => {
-    const newMessages = [...messages, message];
+  const onSend = (
+    body: Record<string, unknown> & { message: OpenAIChatMessage }
+  ) => {
+    const newMessages = [...messages, body.message];
     setMessages(newMessages);
-    fetchMessage(newMessages);
+    sendChat(body);
   };
 
   const onClear = () => {
     setMessages([]);
+    setCurrentMessage(undefined);
   };
 
   useEffect(() => {
@@ -120,4 +114,24 @@ export const useChatGPT = () => {
     onClear,
     onStop,
   };
+};
+
+export const useGenerateMealPlan = () => {
+  return useChatGPT({
+    urlEndpoint: "create-meal-plan",
+    streamChunkSchema: partialCreateMealPlanSchema,
+    updateCurrentMessage: (chunk) => {
+      return chunk.value;
+    },
+  });
+};
+
+export const useUpdateRecipe = () => {
+  return useChatGPT({
+    urlEndpoint: "update-recipe",
+    streamChunkSchema: partialRecipeSchema,
+    updateCurrentMessage: (chunk) => {
+      return chunk.value;
+    },
+  });
 };
