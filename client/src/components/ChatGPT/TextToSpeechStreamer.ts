@@ -7,7 +7,7 @@ export class TextToSpeechStreamer {
   private ttsSocket: WebSocket = new WebSocket(this.wsUrl);
   private audioPlaybackQueue = new SequentialAsyncOperationQueue();
   private sentBOS = false;
-  private insideFootnote = false;
+  private insideLink = false;
 
   private constructor() {
     this.ttsSocket.onmessage = this.handleMessage.bind(this);
@@ -101,7 +101,7 @@ export class TextToSpeechStreamer {
         xi_api_key: import.meta.env.VITE_ELEVEN_LABS_API_KEY, // replace with your API key
       };
       this.ttsSocket.send(JSON.stringify(bosMessage));
-      this.insideFootnote = false;
+      this.insideLink = false;
       this.sentBOS = true;
     }
 
@@ -128,7 +128,7 @@ export class TextToSpeechStreamer {
       if (textPart) {
         this.send(textPart + " ");
       }
-      this.insideFootnote = true;
+      this.insideLink = true;
       return;
     } else if (text.includes("]")) {
       // send the buffer and the text after the ]
@@ -137,9 +137,9 @@ export class TextToSpeechStreamer {
       if (textPart) {
         this.send(textPart + " ");
       }
-      this.insideFootnote = false;
+      this.insideLink = false;
       return;
-    } else if (this.insideFootnote) {
+    } else if (this.insideLink) {
       return;
     } else if (splitters.some((s) => buffer.endsWith(s))) {
       this.send(buffer + " ");
@@ -161,7 +161,7 @@ export class TextToSpeechStreamer {
     const eosMessage = {
       text: "",
     };
-    this.insideFootnote = false;
+    this.insideLink = false;
     this.ttsSocket.send(JSON.stringify(eosMessage));
   }
 }

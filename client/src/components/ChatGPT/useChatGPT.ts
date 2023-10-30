@@ -65,8 +65,15 @@ export const useChatGPT = () => {
 
       if (tts) {
         const ttsStreamer = await TextToSpeechStreamer.create();
+        let stopSpeaking = false;
         for await (const { textDelta } of textDeltas) {
-          ttsStreamer.sendTextDelta(textDelta);
+          if (textDelta.includes("---")) {
+            stopSpeaking = true;
+            ttsStreamer.done();
+          }
+          if (!stopSpeaking) {
+            ttsStreamer.sendTextDelta(textDelta);
+          }
           currentMessage.current += textDelta;
           forceUpdate();
         }

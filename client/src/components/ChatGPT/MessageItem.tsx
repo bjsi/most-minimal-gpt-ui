@@ -6,6 +6,7 @@ import mdFootnotes from "markdown-it-footnote";
 
 import clsx from "clsx";
 import { OpenAIChatMessage } from "modelfusion";
+import React from "react";
 
 const md = MarkdownIt({ html: true })
   .use(mdKatex)
