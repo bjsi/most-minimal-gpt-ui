@@ -19,7 +19,7 @@ export const ChatGPT = () => {
 
   return (
     <div
-      className=" chat-wrapper"
+      className="overflow-hidden chat-wrapper"
       style={{
         height: `calc(100vh - ${HEADER_HEIGHT}px)`,
         maxHeight: `calc(100vh - ${HEADER_HEIGHT}px)`,
@@ -27,7 +27,7 @@ export const ChatGPT = () => {
       }}
     >
       <div
-        className="w-[100%]"
+        className="w-[100%] overflow-y-auto flex flex-col items-center"
         style={{
           minHeight: `calc(100% - ${SEND_BAR_HEIGHT}px)`,
           maxHeight: `calc(100% - ${SEND_BAR_HEIGHT}px)`,
@@ -35,17 +35,21 @@ export const ChatGPT = () => {
           overflowY: "auto",
         }}
       >
-        {messages.map((message, index) => (
-          <MessageItem key={index} message={message} />
-        ))}
-        {currentMessage.current && (
-          <MessageItem
-            message={{
-              content: currentMessage.current,
-              role: "assistant",
-            }}
-          />
-        )}
+        <div className="max-w-[800px] h-[100%]">
+          <div className="w-[100%] max-h-[100%] h-[100%]">
+            {messages.map((message, index) => (
+              <MessageItem key={index} message={message} />
+            ))}
+            {currentMessage.current && (
+              <MessageItem
+                message={{
+                  content: currentMessage.current,
+                  role: "assistant",
+                }}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
       <SendBar

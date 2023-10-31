@@ -47,7 +47,7 @@ const MessageItem = (props: ChatMessageItemProps) => {
   const { message } = props;
 
   return (
-    <div className="p-3 rounded-md hover:bg-black hover:bg-opacity-5">
+    <div className="p-3 rounded-md hover:bg-black hover:bg-opacity-5 w-[700px]">
       <div className="flex items-center gap-3">
         <div
           className={clsx("inline-block w-6 h-6 rounded-full")}
