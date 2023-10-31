@@ -5,6 +5,7 @@ import mdKatex from "markdown-it-katex";
 
 import clsx from "clsx";
 import { OpenAIChatMessage } from "modelfusion";
+import React from "react";
 
 const md = MarkdownIt({ html: true }).use(mdKatex).use(mdHighlight);
 const fence = md.renderer.rules.fence!;
