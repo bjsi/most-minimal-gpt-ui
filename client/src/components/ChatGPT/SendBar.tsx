@@ -8,6 +8,7 @@ import React from "react";
 
 interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
+  disabled?: boolean;
 }
 
 function Button(props: ButtonProps) {

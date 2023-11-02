@@ -1,6 +1,7 @@
 import { GithubOutlined } from "@ant-design/icons";
 import { Layout, Space, Typography } from "antd";
 import React from "react";
+import { SettingsModal } from "../SettingsModal";
 
 const { Link } = Typography;
 
@@ -28,6 +29,7 @@ export const HeaderBar = () => {
           </Link>
         </div>
         <Space className={"flex ml-auto h-full overflow-hidden"} size={0}>
+          <SettingsModal />
           <span className={"flex ml-auto h-full overflow-hidden"}>
             <Link
               className={

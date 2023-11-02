@@ -1,6 +1,8 @@
 import { SequentialAsyncOperationQueue } from "./sequentialAsyncOperationQueue";
+import { message } from "antd";
 
 export class TextToSpeechStreamer {
+  private ttsKey: string;
   private voiceId = "LX4K2KUcue0ViWVHVMn6"; // David Deutsch
   private model = "eleven_monolingual_v1";
   private wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${this.voiceId}/stream-input?model_id=${this.model}`;
@@ -9,14 +11,15 @@ export class TextToSpeechStreamer {
   private sentBOS = false;
   private insideLink = false;
 
-  private constructor() {
+  private constructor(ttsKey: string) {
     this.ttsSocket.onmessage = this.handleMessage.bind(this);
     this.ttsSocket.onerror = this.handleError.bind(this);
     this.ttsSocket.onclose = this.handleClose.bind(this);
+    this.ttsKey = ttsKey;
   }
 
-  static async create() {
-    const ttsStreamer = new TextToSpeechStreamer();
+  static async create(ttsKey: string) {
+    const ttsStreamer = new TextToSpeechStreamer(ttsKey);
     await new Promise((resolve) => {
       ttsStreamer.ttsSocket.onopen = resolve;
     });
@@ -27,6 +30,10 @@ export class TextToSpeechStreamer {
     const response = JSON.parse(event.data);
 
     console.log("Server response:", response);
+    if (response.error && response.error === "invalid_api_key") {
+      message.error("Invalid API key for Eleven Labs Text to Speech");
+      return;
+    }
 
     if (response.audio) {
       // decode and handle the audio data (e.g., play it)
@@ -65,7 +72,7 @@ export class TextToSpeechStreamer {
     }
   }
 
-  private handleError(error: MessageEvent) {
+  private handleError(error: Event) {
     console.error(`WebSocket Error: ${error}`);
   }
 
@@ -98,7 +105,7 @@ export class TextToSpeechStreamer {
           stability: 0.5,
           similarity_boost: true,
         },
-        xi_api_key: import.meta.env.VITE_ELEVEN_LABS_API_KEY, // replace with your API key
+        xi_api_key: this.ttsKey,
       };
       this.ttsSocket.send(JSON.stringify(bosMessage));
       this.insideLink = false;

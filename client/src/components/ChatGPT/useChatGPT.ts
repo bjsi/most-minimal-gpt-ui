@@ -6,6 +6,9 @@ import { OpenAIChatMessage, readEventSourceStream } from "modelfusion";
 import { throttle } from "./throttle";
 import { ZodSchema } from "./ZodSchema";
 import { TextToSpeechStreamer } from "./TextToSpeechStreamer";
+import { message } from "antd";
+import { useReadLocalStorage } from "usehooks-ts";
+import { APIKey } from "../SettingsModal";
 
 const scrollDown = throttle(() => {
   window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -19,6 +22,9 @@ export const useChatGPT = () => {
 
   const controller = useRef<AbortController | null>(null);
   const currentMessage = useRef<string>("");
+
+  const openAIKey = useReadLocalStorage<APIKey>("openAIKey")?.key;
+  const elevenlabsKey = useReadLocalStorage<APIKey>("elevenlabsKey")?.key;
 
   const archiveCurrentMessage = () => {
     const content = currentMessage.current;
@@ -51,20 +57,28 @@ export const useChatGPT = () => {
       const response = await fetch(`http://localhost:3020/${urlEndpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          ...body,
+          openAIKey,
+        }),
         signal: controller.current.signal,
       });
+
+      if (response.status !== 200) {
+        const err = await response.json();
+        throw new Error(err.message);
+      }
 
       const textDeltas = readEventSourceStream({
         stream: response.body!,
         schema: new ZodSchema(z.object({ textDelta: z.string() })),
-        errorHandler: (e) => {
-          console.error(e);
+        errorHandler: () => {
+          controller.current!.abort();
         },
       });
 
-      if (tts) {
-        const ttsStreamer = await TextToSpeechStreamer.create();
+      if (tts && elevenlabsKey) {
+        const ttsStreamer = await TextToSpeechStreamer.create(elevenlabsKey);
         let stopSpeaking = false;
         for await (const { textDelta } of textDeltas) {
           if (textDelta.includes("---")) {
@@ -79,7 +93,7 @@ export const useChatGPT = () => {
         }
         ttsStreamer.done();
       } else {
-        for await (const textDelta of textDeltas) {
+        for await (const { textDelta } of textDeltas) {
           currentMessage.current += textDelta;
           forceUpdate();
         }
@@ -87,9 +101,14 @@ export const useChatGPT = () => {
 
       archiveCurrentMessage();
     } catch (e) {
-      console.error(e);
-      setLoading(false);
-      return;
+      if ((e as any).name === "AbortError") {
+        return;
+      } else {
+        controller.current?.abort();
+        message.error((e as any).message);
+        console.error(e);
+        setLoading(false);
+      }
     }
   };
 
