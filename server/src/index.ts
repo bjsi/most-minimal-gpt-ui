@@ -13,7 +13,7 @@ import { chatAs } from "shared-lib/src/data/search";
 dotenv.config();
 
 const app = express();
-const port = 3020;
+const port = process.env.PORT || 3020;
 
 app.use(express.json());
 app.use(cors());

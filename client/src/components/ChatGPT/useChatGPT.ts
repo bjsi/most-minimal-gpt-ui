@@ -54,15 +54,18 @@ export const useChatGPT = () => {
       controller.current = new AbortController();
       setLoading(true);
 
-      const response = await fetch(`http://localhost:3020/${urlEndpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...body,
-          openAIKey,
-        }),
-        signal: controller.current.signal,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}${urlEndpoint}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...body,
+            openAIKey,
+          }),
+          signal: controller.current.signal,
+        }
+      );
 
       if (response.status !== 200) {
         const err = await response.json();
