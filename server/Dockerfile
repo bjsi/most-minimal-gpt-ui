@@ -10,7 +10,8 @@ RUN apk add --update --no-cache \
     pango-dev \
     libtool \
     autoconf \
-    automake
+    automake \
+    gcompat
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
