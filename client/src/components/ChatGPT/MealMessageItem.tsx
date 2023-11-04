@@ -11,6 +11,7 @@ interface MealMessageItemProps {
   requirements: string;
   meal: z.infer<typeof partialRecipeSchema>;
   updateRecipe: (meal: z.infer<typeof partialRecipeSchema>) => void;
+  deleteRecipe: () => void;
 }
 
 export function MealMessageItem(props: MealMessageItemProps) {
@@ -35,7 +36,6 @@ export function MealMessageItem(props: MealMessageItemProps) {
 
   const {
     onSend,
-    onClear,
     onStop,
     loading: recipeLoading,
     disabled,
@@ -49,24 +49,25 @@ export function MealMessageItem(props: MealMessageItemProps) {
   }, [updatedRecipe]);
 
   return (
-    <div className="flex flex-col gap-2 p-3 rounded-md hover:bg-black hover:bg-opacity-">
-      <div className="flex flex-row items-center gap-4">
+    <div className="flex flex-col gap-2 p-3 rounded-md hover:bg-black hover:bg-opacity- w-[700px]">
+      <div className="grid items-center grid-cols-2 gap-4">
         <MessageItem
           message={{
             role: "assistant",
             content: formatMeal(meal),
           }}
         />
-        {image && (
-          <img
-            className="object-cover rounded-md shadow-sm w-50 h-50"
-            alt={"AI Generated Meal Image"}
-            src={"data:image/png;base64," + image}
-          />
-        )}
+        <div className="flex items-center justify-center">
+          {image && (
+            <img
+              className="object-cover rounded-md shadow-sm w-50 h-50"
+              alt={"AI Generated Meal Image"}
+              src={"data:image/png;base64," + image}
+            />
+          )}
+        </div>
       </div>
       <SendBar
-        hideClearBtn
         placeholder="Give feedback on this meal..."
         loading={recipeLoading}
         disabled={disabled || !isComplete}
@@ -79,7 +80,7 @@ export function MealMessageItem(props: MealMessageItemProps) {
             }),
           })
         }
-        onClear={onClear}
+        onClear={props.deleteRecipe}
         onStop={onStop}
       />
     </div>

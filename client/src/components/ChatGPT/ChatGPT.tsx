@@ -64,6 +64,11 @@ export const ChatGPT = () => {
             {mealPlan &&
               (mealPlan.recipes || []).map((recipe, idx) => (
                 <MealMessageItem
+                  deleteRecipe={() => {
+                    const newRecipes = [...(currentMessage?.recipes || [])];
+                    newRecipes.splice(idx, 1);
+                    setMealPlan({ ...currentMessage, recipes: newRecipes });
+                  }}
                   updateRecipe={(updatedRecipe) => {
                     const newRecipes = [...(currentMessage?.recipes || [])];
                     newRecipes[idx] = updatedRecipe;
