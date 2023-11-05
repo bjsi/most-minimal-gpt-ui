@@ -3,8 +3,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { z } from "zod";
 import { AbortError, OpenAIChatModel, streamText } from "modelfusion";
+import { chatAs } from "shared-lib/src/data/search";
 
-dotenv.config();
+dotenv.config({
+  path: "../../../.env",
+});
 
 const app = express();
 const port = 3020;
@@ -85,6 +88,23 @@ app.post("/chat", async (request, response) => {
         },
       }
     )
+  );
+});
+
+app.post("/chatAs", async (request, response) => {
+  const { messages } = request.body;
+  const parsedData = chatMessagesSchema.safeParse(messages);
+  if (parsedData.success === false) {
+    return response.status(400).json({
+      error: `Could not parse content. Error: ${parsedData.error}`,
+    });
+  }
+  streamRequestHandler(request, response, (signal) =>
+    chatAs({
+      messages,
+      personality: process.env.ANSWER_AS as string,
+      signal,
+    })
   );
 });
 

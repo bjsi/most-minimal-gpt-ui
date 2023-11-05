@@ -73,9 +73,9 @@ export const useChatGPT = () => {
         ttsStreamer.done();
       } else {
         for await (const textDelta of textDeltas) {
-        currentMessage.current += textDelta;
-        forceUpdate();
-      }
+          currentMessage.current += textDelta;
+          forceUpdate();
+        }
       }
 
       archiveCurrentMessage();
@@ -87,7 +87,7 @@ export const useChatGPT = () => {
   };
 
   const sendChatMessage = async (messages: OpenAIChatMessage[]) => {
-    await sendChat("chat", { messages }, false);
+    await sendChat("chatAs", { messages }, false);
   };
 
   const onStop = () => {
@@ -100,7 +100,7 @@ export const useChatGPT = () => {
   const onSend = (message: OpenAIChatMessage) => {
     const newMessages = [...messages, message];
     setMessages(newMessages);
-    fetchMessage(newMessages);
+    sendChatMessage(newMessages);
   };
 
   const onClear = () => {
