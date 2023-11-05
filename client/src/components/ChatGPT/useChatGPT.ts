@@ -72,7 +72,7 @@ export const useChatGPT = () => {
         }
         ttsStreamer.done();
       } else {
-        for await (const textDelta of textDeltas) {
+        for await (const { textDelta } of textDeltas) {
           currentMessage.current += textDelta;
           forceUpdate();
         }

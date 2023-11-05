@@ -2,12 +2,17 @@ import MarkdownIt from "markdown-it";
 import mdHighlight from "markdown-it-highlightjs";
 // @ts-ignore
 import mdKatex from "markdown-it-katex";
+import mdFootnotes from "markdown-it-footnote";
 
 import clsx from "clsx";
 import { OpenAIChatMessage } from "modelfusion";
 import React from "react";
 
-const md = MarkdownIt({ html: true }).use(mdKatex).use(mdHighlight);
+const md = MarkdownIt({ html: true })
+  .use(mdKatex)
+  .use(mdHighlight)
+  .use(mdFootnotes);
+
 const fence = md.renderer.rules.fence!;
 md.renderer.rules.fence = (...args) => {
   const [tokens, idx] = args;
